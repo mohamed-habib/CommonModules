@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">CommonModules</string>
+    <string name="internal_storage">Internal Storage</string>
+
+</resources>
