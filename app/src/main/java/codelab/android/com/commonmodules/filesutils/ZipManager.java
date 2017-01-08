@@ -12,7 +12,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Created by tarek on 04/08/2016.
+ * Created by tarek on 12/26/2016.
  */
 public class ZipManager {
 
@@ -50,7 +50,9 @@ public class ZipManager {
     public void unzip(String _zipFile, String _targetLocation) {
 
         //create target location folder if not exist
-        dirChecker(_targetLocation);
+        File directory = new File(_targetLocation);
+        if (!directory.exists())
+            directory.mkdirs();
 
         try {
             FileInputStream fin = new FileInputStream(_zipFile);
@@ -78,7 +80,12 @@ public class ZipManager {
         }
     }
 
-    public void dirChecker(String dirName) {
+    private void dirChecker(String dir)
+    {
+        File f = new File(dir);
+        if(!f.isDirectory())
+        {
+            f.mkdirs();
+        }
     }
-
 }

@@ -20,11 +20,26 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 /**
- * Created by Nourhan on 6/22/2016.
+ * Created by Nourhan on 12/26/2016.
+ */
+
+/**
+ * fileFromByteArray
+ * fileInputStreamToString
+ * fileToInputStream
+ * readFileasString
+ * writeJsonToFile
+ * fileToByteArray
+ * zipFileToByteArray
+ * copyFileOrDirFromAssetsToDeviceStorage
+ * copySingleFileFromAssetToDeviceStorage
+ * createFileFromInputStream
+ * copyFileToDir
+ * writeStringToFile
  */
 public class FileModule {
 
-    public File generateFileFromByteArray(byte[] byteFile, String filePath) {
+    public File fileFromByteArray(byte[] byteFile, String filePath) {
         try {
 
             File directory = new File(Environment.getExternalStorageDirectory() + "/PME");
@@ -43,24 +58,26 @@ public class FileModule {
         return null;
     }
 
-    public static String convertStreamToString(InputStream is) throws Exception {
+    public String fileInputStreamToString(FileInputStream is)  {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         StringBuilder sb = new StringBuilder();
         String line = null;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line).append("\n");
+        try {
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        reader.close();
         return sb.toString();
     }
 
-    public String readFileasString(String filePath) {
-        String stringFile = null;
+    public FileInputStream fileToInputStream(String filePath) {
         File fl = new File(filePath);
         FileInputStream fin = null;
         try {
             fin = new FileInputStream(fl);
-            stringFile = convertStreamToString(fin);
             fin.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -69,27 +86,31 @@ public class FileModule {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return stringFile;
-
+        return  fin;
     }
 
-    public File writeJsonToFile(String uploadData, int taskID) {
-        File file = null;
+    public String readFileasString(String filePath) {
+        String stringFile = null;
+        FileInputStream fin = fileToInputStream(filePath);
+            stringFile = fileInputStreamToString(fin);
+        return stringFile;
+    }
 
+    public File writeJsonToFile(String jsonString,String generatedDirPath, String generatedFileName){
+        File file = null;
         try {
 
-
-            File directory = new File(Environment.getExternalStorageDirectory() + "/PME/" + taskID);
+            File directory = new File(generatedDirPath);
             if (!directory.exists())
                 directory.mkdirs();
 
-            file = new File(Environment.getExternalStorageDirectory() + "/PME/" + taskID + "/json.txt");
+            file = new File(generatedDirPath+ "/"+generatedFileName);
 
 
             Writer out = new BufferedWriter(new OutputStreamWriter(
                     new FileOutputStream(file), "UTF8"));
 
-            out.write(uploadData);
+            out.write(jsonString);
 
             out.flush();
             out.close();
@@ -102,15 +123,15 @@ public class FileModule {
         return file;
     }
 
-    public byte[] fileToByteArray(String uploadData, int taskID) {
-        writeJsonToFile(uploadData, taskID);
+    public byte[] fileToByteArray(String jsonString,String generatedDirPath, String generatedFileName) {
+
+        File file = null;
+        file = writeJsonToFile(jsonString, generatedDirPath,generatedFileName);
 
         FileInputStream crunchifyInputStream = null;
-        File file = null;
         byte[] dataArray = null;
 
         try {
-            file = new File(Environment.getExternalStorageDirectory() + "/PME/" + taskID + "/json.txt");
             dataArray = new byte[(int) file.length()];
             if (file.exists()) {
                 crunchifyInputStream = new FileInputStream(file);
@@ -125,13 +146,13 @@ public class FileModule {
         return dataArray;
     }
 
-    public byte[] zipFileToByteArray(int taskID) {
+    public byte[] zipFileToByteArray(String zippedFilePath) {
         FileInputStream inputStream = null;
         File file = null;
         byte[] dataArray = null;
 
         try {
-            file = new File(Environment.getExternalStorageDirectory() + "/PME/UploadData_" + taskID + ".zip");
+            file = new File(zippedFilePath);
             dataArray = new byte[(int) file.length()];
             if (file.exists()) {
                 inputStream = new FileInputStream(file);
@@ -146,14 +167,14 @@ public class FileModule {
         return dataArray;
     }
 
-    public static void copyFileOrDirFromAssetsToDeviceStorage(String assetPath, Context context, String resultPath) {
+    public  void copyFileOrDirFromAssetsToDeviceStorage(String assetPath, Context context, String resultPath) {
         AssetManager assetManager = context.getAssets();
         String assets[] = null;
         try {
             assets = assetManager.list(assetPath);
             if (assets.length == 0) {
                 //this is a file
-                copyFileFromAssetToDeviceStorage(assetPath, resultPath, context);
+                copySingleFileFromAssetToDeviceStorage(assetPath, resultPath, context);
             } else {
                 //this is a folder
                 File dir = new File(resultPath);
@@ -168,7 +189,7 @@ public class FileModule {
         }
     }
 
-    public static void copyFileFromAssetToDeviceStorage(String assetFilePath, String resultFilePath, Context context) {
+    public  void copySingleFileFromAssetToDeviceStorage(String assetFilePath, String resultFilePath, Context context) {
         AssetManager assetManager = context.getAssets();
         InputStream in = null;
         OutputStream out = null;
@@ -191,7 +212,7 @@ public class FileModule {
         }
     }
 
-    public static File createFileFromInputStream(InputStream inputStream, String mFileName) {
+    public  File createFileFromInputStream(InputStream inputStream, String mFileName) {
 
         try {
             File f = new File(mFileName);
@@ -214,7 +235,7 @@ public class FileModule {
         return null;
     }
 
-    public static void copyFileToDir(String filePath, String dirPath, String newFileName) {
+    public  void copyFileToDir(String filePath, String dirPath, String newFileName) {
 
         File taskDirectory = new File(dirPath);
 
@@ -262,7 +283,7 @@ public class FileModule {
         }
     }
 
-    public static void writeToFile(String data, String dirPath, String fileName) {
+    public  void writeStringToFile(String data, String dirPath, String fileName) {
 
         File dirPathFile = new File(dirPath);
         // Make sure the path directory exists.
@@ -286,6 +307,5 @@ public class FileModule {
             Log.e("Exception", "File write failed: " + e.toString());
         }
     }
-
 
 }
